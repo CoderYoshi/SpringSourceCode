@@ -1,5 +1,6 @@
 import dream.beans.Person;
 import dream.config.MainConfig;
+import dream.config.MainConfig2;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -36,7 +37,16 @@ public class MainTest {
 
     }
 
-
+    /**
+     * 测试扫描规则
+     * includeFilters = Filter{} 指定扫描包的时候按照规则包含哪些组件
+     * excludeFilters = Filter{} 指定扫描包的时候按照规则排除哪些组件
+     * FilterType.ANNOTATION     按照注解
+     * FilterType.ASSIGNABLE_TYPE  按照给定类型
+     * FilterType.  ASPECTJ,       使用ASPECTJ表达式
+     * FilterType.  REGEX,         使用正则表达式
+     * FilterType.  CUSTOM;        自定义规则
+     */
     @Test
     //扫描时排除（只包含）某些包
     public void ComponentScanFilterTest(){
@@ -49,4 +59,46 @@ public class MainTest {
         }
 
     }
+
+
+    /**
+     * 测试组件的作用域
+     */
+    @Test
+    public void MainConfig2Test(){
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(MainConfig2.class);
+        System.out.println("IOC容器创建成功...");
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String name: beanDefinitionNames
+        ) {
+            System.out.println(name);
+        }
+
+        Object person = applicationContext.getBean("person");
+        Object person1 = applicationContext.getBean("person");
+
+        System.out.println(person==person1);
+
+    }
+
+    /**
+     * 懒加载测试
+     */
+    @Test
+    public void LazyLodeTest(){
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(MainConfig2.class);
+        System.out.println("IOC容器创建成功...");
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String name: beanDefinitionNames
+        ) {
+            System.out.println(name);
+        }
+
+        Object person = applicationContext.getBean("person");
+        Object person1 = applicationContext.getBean("person");
+
+        System.out.println(person==person1);
+    }
+
+
 }

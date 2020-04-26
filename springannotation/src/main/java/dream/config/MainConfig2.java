@@ -1,10 +1,9 @@
 package dream.config;
 
 import dream.beans.Person;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Scope;
+import dream.condition.LinuxCondition;
+import dream.condition.WinCondition;
+import org.springframework.context.annotation.*;
 
 @Configuration
 public class MainConfig2 {
@@ -30,5 +29,19 @@ public class MainConfig2 {
     public Person person() {
         System.out.println("给容器中添加person...");
         return new Person("李四", 50);
+    }
+    /**
+     * @Conditional:按照一定条件判断，符合条件的向容器中注册Bean
+     */
+    @Conditional({WinCondition.class})
+    @Bean(value = "bill")
+    public Person person01() {
+        return new Person("bill gates", 65);
+    }
+
+    @Conditional({LinuxCondition.class})
+    @Bean(value = "linus")
+    public Person person02() {
+        return new Person("linus", 46);
     }
 }

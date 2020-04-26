@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.env.Environment;
 
 public class MainTest {
 
@@ -100,5 +101,19 @@ public class MainTest {
         System.out.println(person==person1);
     }
 
-
+    /**
+     * 条件注册
+     */
+    @Test
+    public void ConditionalTest(){
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(MainConfig2.class);
+        Environment environment = applicationContext.getEnvironment();  //获取IOC容器的运行环境
+        String property = environment.getProperty("os.name");
+        System.out.println(property);
+        String[] beanDefinitionNames = applicationContext.getBeanNamesForType(Person.class);
+        for (String name: beanDefinitionNames
+        ) {
+            System.out.println(name);
+        }
+    }
 }

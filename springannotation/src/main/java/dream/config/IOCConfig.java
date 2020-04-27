@@ -24,10 +24,10 @@ import org.springframework.stereotype.Controller;
 // FilterType.  REGEX,         使用正则表达式
 // FilterType.  CUSTOM;        自定义规则
 
-public class MainConfig {
+public class IOCConfig {
 
     //给容器中注册一个Bean；类型为返回值的类型，默认id值为方法名
-    @Bean(value = "person")  //value 指定Bean的id
+    @Bean(value = "person1")  //value 指定Bean的id
     public Person person() {
         return new Person("李四", 20);
     }

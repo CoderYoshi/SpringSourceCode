@@ -1,5 +1,5 @@
 import dream.beans.Person;
-import dream.config.MainConfig;
+import dream.config.IOCConfig;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -18,7 +18,7 @@ public class MainTest {
     @Test
     //通过注解方式向容器注入一个Bean
     public void javaConfigTest(){
-        ApplicationContext applicationContext =new AnnotationConfigApplicationContext(MainConfig.class);
+        ApplicationContext applicationContext =new AnnotationConfigApplicationContext(IOCConfig.class);
         Person person = applicationContext.getBean(Person.class);
         System.out.println(person);
         //根据指定类型查询Bean的名字

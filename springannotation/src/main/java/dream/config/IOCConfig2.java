@@ -10,7 +10,7 @@ import org.springframework.context.annotation.*;
 
 @Import({Color.class, MyImportSelector.class, MyImportBeanDefinitionRegistrar.class})
 @Configuration
-public class MainConfig2 {
+public class IOCConfig2 {
 
 
 
@@ -29,7 +29,7 @@ public class MainConfig2 {
      */
     @Bean(value = "person")
     //懒加载注解
-    @Lazy
+    //@Lazy
     public Person person() {
         System.out.println("给容器中添加person...");
         return new Person("李四", 50);

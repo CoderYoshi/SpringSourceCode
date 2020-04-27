@@ -1,10 +1,14 @@
 package dream.config;
 
+import dream.beans.Color;
+import dream.beans.ColorFactoryBean;
 import dream.beans.Person;
 import dream.condition.LinuxCondition;
-import dream.condition.WinCondition;
+import dream.condition.MyImportBeanDefinitionRegistrar;
+import dream.condition.MyImportSelector;
 import org.springframework.context.annotation.*;
 
+@Import({Color.class, MyImportSelector.class, MyImportBeanDefinitionRegistrar.class})
 @Configuration
 public class MainConfig2 {
 
@@ -33,7 +37,7 @@ public class MainConfig2 {
     /**
      * @Conditional:按照一定条件判断，符合条件的向容器中注册Bean
      */
-    @Conditional({WinCondition.class})
+    //@Conditional({WinCondition.class})
     @Bean(value = "bill")
     public Person person01() {
         return new Person("bill gates", 65);
@@ -44,4 +48,24 @@ public class MainConfig2 {
     public Person person02() {
         return new Person("linus", 46);
     }
+
+    /**
+     * 给容器中注册组件：
+     *      1.包扫描 + 组件标注注解（@Controller/@Service，etc.）
+     *      2.@Bean [导入的第三方包里面的组件]
+     *      3.@Import[快速给容器导入组件，id默认是组件全类名]：
+     *          1）.@Import(xxx.class)，容器就会自动注册该组件
+     *          2）.ImportSelector(),返回需要导入的组件的全类名数组
+     *          3）.ImportBeanDefinitionRegistrar，手动注册Bean到容器中
+     *          4）.使用Spring提供的FactoryBean（工厂Bean）：
+     *              a.默认获取的是工厂Bean调用getObject()创建的对象；
+     *              b.要获取工厂Bean本身，需要再id前面加一个&：applicationContext.getBean("&colorFactoryBean");
+     */
+
+    @Bean
+    public ColorFactoryBean colorFactoryBean(){
+        return new ColorFactoryBean();
+    }
+
+
 }

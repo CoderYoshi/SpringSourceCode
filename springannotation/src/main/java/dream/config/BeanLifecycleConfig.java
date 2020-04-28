@@ -34,4 +34,6 @@ public class BeanLifecycleConfig {
         return new Car();
 
     }
+
+
 }

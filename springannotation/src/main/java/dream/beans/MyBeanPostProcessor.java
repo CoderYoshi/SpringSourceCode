@@ -23,4 +23,9 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
         System.out.println("postProcessAfterInitialization..."+s+"===>"+o);
         return o;
     }
+/**
+ * spring底层对BeanPostProcessor的使用：
+ *      实现 bean赋值、注入其他组件、@Autowired、生命周期注解功能、@Async，.etc  功能
+ */
+
 }

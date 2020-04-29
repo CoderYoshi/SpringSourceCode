@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BeanLifecycleConfig {
 
-    @Bean(initMethod = "init",destroyMethod = "destroy")
+    //@Bean(initMethod = "init",destroyMethod = "destroy")
     public Car getCar(){
         return new Car();
 

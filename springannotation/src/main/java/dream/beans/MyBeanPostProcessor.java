@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 /**
  * 后置处理器：初始化前后进行工作
  */
-@Component
+//@Component
 public class MyBeanPostProcessor implements BeanPostProcessor {
 
 

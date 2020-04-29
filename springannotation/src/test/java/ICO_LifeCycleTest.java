@@ -2,7 +2,7 @@ import dream.config.BeanLifecycleConfig;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-public class LifeCycleTest {
+public class ICO_LifeCycleTest {
 
 
     @Test

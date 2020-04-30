@@ -7,7 +7,7 @@ import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringValueResolver;
 
-@Component
+//@Component
 public class Car implements ApplicationContextAware, EmbeddedValueResolverAware {
 
     private ApplicationContext applicationContext;

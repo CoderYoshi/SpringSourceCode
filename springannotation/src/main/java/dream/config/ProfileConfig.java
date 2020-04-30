@@ -16,7 +16,7 @@ import java.beans.PropertyVetoException;
  *      1.加了环境标识的bean，只有这个环境激活时才会被注册到容器中。默认是开启default环境
  *      2.写在配置类上，只有在指定环境下，配置类才会被加载
  *      3.没有标注的在任何环境下都可以被加载
- *      
+ *
  */
 
 @Configuration

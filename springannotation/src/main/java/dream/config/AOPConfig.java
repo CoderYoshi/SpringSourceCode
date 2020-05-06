@@ -30,6 +30,99 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  *      2.在切面类上的每一个通知方法上标注通知注解，告诉Spring何时何地运行（切入点表达式）
  *      3.开启注解的AOP模式（@EnableAspectJAutoProxy）
  *
+ *
+ *  AOP的原理：[看给容器中注入了什么组件，这个组件什么时候工作，功能是什么]
+ *      @EnableAspectJAutoProxy
+ *          1.@EnableAspectJAutoProxy是什么
+ *          @Import({AspectJAutoProxyRegistrar.class})，给容器中导入AspectJAutoProxyRegistrar组件
+ *          利用AspectJAutoProxyRegistrar自定义给容器中注册bean:
+ *              以org.springframework.aop.config.internalAutoProxyCreator为beanName向容器中注册了一个
+ *              org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator 的beanDefinition
+ *          2.AnnotationAwareAspectJAutoProxyCreator:
+ *              继承关系：AnnotationAwareAspectJAutoProxyCreator <== AspectJAwareAdvisorAutoProxyCreator <== AbstractAdvisorAutoProxyCreator
+ *                    <== AbstractAutoProxyCreator <== ProxyProcessorSupport[抽象类],SmartInstantiationAwareBeanPostProcessor[后置处理器接口], BeanFactoryAware[接口]
+ *              关注后置处理器（bean完成初始化前后所做的事情）、自动装配BeanFactory
+ *              (1).AbstractAutoProxyCreator.setBeanFactory()：
+ *                  (2).AbstractAdvisorAutoProxyCreator.setBeanFactory()重写，调用方法AbstractAdvisorAutoProxyCreator.initBeanFactory()
+ *                      (3).AspectJAwareAdvisorAutoProxyCreator
+ *                          (4).AnnotationAwareAspectJAutoProxyCreator.initBeanFactory()重写
+ *
+ *              AbstractAutoProxyCreator.后置处理器逻辑
+ *
+ *
+ *     流程：
+ *          1.传入配置类，创建IOC容器
+ *          2.注册配置类，调用refresh()刷新容器
+ *          3.this.registerBeanPostProcessors(beanFactory)：注册bean的后置处理器来方便拦截bean的创建
+ *              1).先获取IOC容器中已经定义了的需要创建对象的所有BeanPostProcessor
+ *              2).给容器中添加其他BeanPostProcessor
+ *              3).优先注册实现了PriorityOrdered接口的BeanPostProcessor
+ *              4).再注册实现了Ordered接口的BeanPostProcessor
+ *              5).最后注册其他BeanPostProcessor
+ *              6).注册BeanPostProcessor，实际上就是创建BeanPostProcessor对象，保存在容器中
+ *                      创建名为internalAutoProxyCreator的BeanPostProcessor[类型为AnnotationAwareAspectJAutoProxyCreator]
+ *                      a.创建Bean的实例
+ *                      b.populateBean(beanName, mbd, instanceWrapper)：给bean的属性赋值
+ *                      c.initializeBean(beanName, exposedObject, mbd)：初始化bean
+ *                          Ⅰ.invokeAwareMethods(beanName, bean)：处理Aware接口的方法回调
+ *                          Ⅱ.applyBeanPostProcessorsBeforeInitialization(bean, beanName)：执行后置处理器的postProcessorsBeforeInitialization()
+ *                          Ⅲ.invokeInitMethods(beanName, wrappedBean, mbd)：执行自定义的初始化方法
+ *                          Ⅳ.applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName)：执行后置处理器的postProcessorsAfterInitialization()
+ *                      d.BeanPostProcessor[AnnotationAwareAspectJAutoProxyCreator]创建成功：获得一个aspectJAdvisorsBuilder
+ *              7).把BeanPostProcessor注册到BeanFactory：
+ *                  beanFactory.addBeanPostProcessor(postProcessor)
+ * =================以上是创建AnnotationAwareAspectJAutoProxyCreator的过程=============
+ *
+ *                  AnnotationAwareAspectJAutoProxyCreator是继承自InstantiationAwareBeanPostProcessor的后置处理器
+ *          4.finishBeanFactoryInitialization(beanFactory)：完成beanFactory的初始化，创建剩下的单实例bean
+ *              1).遍历获取容器中所有的Bean，依次创建对象getBean(beanName)
+ *                  getBean -> doGetBean -> getSingleton()
+ *              2).创建bean：【AnnotationAwareAspectJAutoProxyCreator会在任何bean创建之前进行拦截，会调用postProcessBeforeInstantiation()方法】
+ *                      a.先从缓存中获取当前bean是否被创建，如果能获取到说明已经被创建，可以直接使用，否则再创建；所有被创建的bean都会被缓存起来
+ *                      b.createBean()：创建bean，AnnotationAwareAspectJAutoProxyCreator会在任何bean创建之前先尝试返回bean实例
+ *                            【BeanPostProcessor是在Bean对象创建完成初始化前后调用的】
+ *                            【InstantiationAwareBeanPostProcessor是在创建Bean实例之前先尝试用后置处理器返回对象的】
+ *                          Ⅰ.resolveBeforeInstantiation(beanName, mbdToUse):解析BeforeInstantiation
+ *                             希望后置处理器在此能返回一个代理对象，如果能返回代理对象就使用，否则继续执行程序
+ *                                 (1).后置处理器先尝试返回对象：
+ *                                   bean = this.applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
+ *                                   拿到所有后置处理器，如果是InstantiationAwareBeanPostProcessor，就执行postProcessorsBeforeInstantiation
+ *                                   if (bean != null) {
+ *                                          bean = this.applyBeanPostProcessorsAfterInitialization(bean, beanName);
+ *                                      }
+ *                          Ⅱ.doCreateBean(beanName, mbdToUse, args)：按照3.6）的流程创建一个bean实例
+ *
+ *
+ *      AnnotationAwareAspectJAutoProxyCreator【AnnotationAwareAspectJAutoProxyCreator】的作用：
+ *          1.在任何bean创建之前，调用postProcessBeforeInstantiation()方法（此处关注MathCalculator和LogAspects的创建过程）
+ *              1).判断当前bean是否在advisedBeans中（保存了所有需要增强的bean）
+ *              2).判断当前bean是否是基础类型Advice.class，Pointcut.class，Advisor.class，AopInfrastructureBean.class，
+ *                 或者是否是切面（@Aspect）
+ *              3).判断是否需要跳过
+ *                  a.获取候选的增强器（切片里面的通知方法） 【List<Advisor> candidateAdvisors】
+ *                    （每一个封装的通知方法增强器是InstantiationModelAwarePointcutAdvisor类型）
+ *                    判断每一个增强器是否是AspectJPointcutAdvisor类型，返回true
+ *                  b.永远返回false
+ *          2.创建对象
+ *              postProcessAfterInitialization：
+ *               return this.wrapIfNecessary(bean, beanName, cacheKey) //需要的情况下进行包装
+ *                 1).获取当前bean的所有增强器（通知方法）  Object[] specificInterceptors
+ *                     a.找到候选的所有增强器（找那些通知方法是要切入当前bean方法的）
+ *                     b.获取到在当前bean使用的增强器
+ *                     c.给增强器排序
+ *                 2).保存当前bean在advisedBeans中
+ *                 3).如果当前bean需要增强，创建当前bean的代理对象
+ *                     a.获取所有增强器
+ *                     b.保存到proxyFactory
+ *                     c.创建代理对象：Spring自动决定
+ *                       JdkDynamicAopProxy(config)：jdk的动态代理
+ *                       ObjenesisCglibAopProxy(config)：cglib的动态代理
+ *                 4).给容器中返回当前组件使用cglib增强了的代理对象
+ *                 5).以后容器中获取到的就是这个代理对象，执行目标方法的时候，代理对象就会执行通知方法的流程
+ *
+ *
+ *
+ *
  */
 
 @EnableAspectJAutoProxy

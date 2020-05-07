@@ -119,8 +119,44 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  *                       ObjenesisCglibAopProxy(config)：cglib的动态代理
  *                 4).给容器中返回当前组件使用cglib增强了的代理对象
  *                 5).以后容器中获取到的就是这个代理对象，执行目标方法的时候，代理对象就会执行通知方法的流程
+ *         3.目标方法的执行
+ *              容器中保存了组件的代理对象（cglib增强后的对象），这个对象里保存了详细信息（如增强器、目标对象，.etc）
+ *              1).CglibAopProxy.intercept():拦截目标方法的执行
+ *              2).根据ProxyFactory获取拦截器链
+ *                  List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+ *                  a.创建一个List<Object> interceptorList保存所有（5个）拦截器：一个默认ExposeInvocationInterceptor的和4个增强器
+ *                  b.b遍历所有的所有的增强器并将其转为Interceptor：interceptors = registry.getInterceptors(advisor);
+ *                  c.将增强器转为List<MethodInterceptor>：
+ *                      如果是MethodInterceptor直接加入到集合中；如果不是则使用AdvisorAdapter（适配器）将增强器转为MethodInterceptor
+ *                      转换完成返回数组
+ *              3).如果没有拦截器链，直接执行目标方法
+ *                  拦截器链：每一个通知方法又被包装为方法拦截器，利用MethodInterceptor机制
+ *              4).如果有拦截器链，把需要执行的目标对象、目标方法、拦截器链等信息传入创建一个CglibAopProxy.CglibMethodInvocation
+ *                 对象并调用 Object retVal = mi.proceed()
+ *              5).拦截器链的触发
+ *                  a.如果没有拦截器直接执行目标方法，或者拦截器的索引和拦截器数组-1大小一样（执行到了最后一个拦截器），执行目标方法
+ *                  b.链式获取每一个拦截器，拦截器执行invoke()方法,每一个拦截器等待下一个拦截器执行完成返回以后再来执行；拦截器的机制，
+ *                    保证通知方法与目标方法的执行顺序
  *
- *
+ *   总结：
+ *      1.@EnableAspectJAutoProxy开启AOP功能
+ *      2.@EnableAspectJAutoProxy会给容器中注册一个AnnotationAwareAspectJAutoProxyCreator组件
+ *      3.AnnotationAwareAspectJAutoProxyCreator是一个后置处理器
+ *      4.容器的创建流程：
+ *          1).registerBeanPostProcessors()注册后置处理器，创建AnnotationAwareAspectJAutoProxyCreator对象
+ *          2).finishBeanFactoryInitialization()初始化剩下的单实例bean
+ *              a.创建业务逻辑组件和切面组件
+ *              b.AnnotationAwareAspectJAutoProxyCreator拦截组件的创建过程
+ *              c.组件创建完之后，判断组件是否需要增强
+ *                  是：切面的通知方法包装成增强器（Advisor）；给业务逻辑组件创建一个代理对象（jdk/cglib）
+ *          5).执行目标方法：
+ *              a.代理对象执行目标方法：
+ *              b.CglibAopProxy.intercept()
+ *                  Ⅰ.得到目标方法的拦截器链（增强器包装成拦截器MethodInterceptor）
+ *                  Ⅱ.利用拦截器的链式机制，依次进入每一个拦截器进行执行
+ *                  Ⅲ.效果：
+ *                      前置通知->目标方法->后置通知->返回通知
+ *                      前置通知->目标方法->后置通知->异常通知
  *
  *
  */

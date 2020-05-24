@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
  * 自动装配：
  *      spring利用依赖注入，完成对IOC容器中各个组件的依赖关系赋值
  *      1.@Aurowired:自动注入[Spring定义的注解]
- *          1).默认优先按照类型去r容器中寻找组件
+ *          1).默认优先按照类型去容器中寻找组件
  *          2).有多个相同类型组件时，以属性的名称作为组件的id去容器中寻找
  *          3).@Qualifier("bookDao"):指定需要装配的组件的id，而不是使用属性名
  *          4).自动装配默认一定要将属性赋值好，没有就会报错；可以使用@Aurowired(required=false)

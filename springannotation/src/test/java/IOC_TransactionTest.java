@@ -1,5 +1,5 @@
 import dream.transaction.TransactionConfig;
-import dream.transaction.UserServe;
+import dream.transaction.UserService;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -10,8 +10,9 @@ public class IOC_TransactionTest {
     @Test
     public void jdbcTest(){
 
-        UserServe userServe = annotationConfigApplicationContext.getBean(UserServe.class);
+        UserService userServe = annotationConfigApplicationContext.getBean(UserService.class);
         userServe.insertUser();
+
     }
 
 

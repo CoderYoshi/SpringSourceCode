@@ -13,7 +13,7 @@ public class UserDao {
 
 
     public void insert(){
-        String sql = "insert into user(username,age) values (?,?)";
+        String sql = "insert into user(name,age) values (?,?)";
         jdbcTemplate.update(sql,"张三",18);
     }
 

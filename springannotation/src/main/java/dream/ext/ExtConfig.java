@@ -79,11 +79,59 @@ import org.springframework.context.annotation.Configuration;
  *              监听ApplicationEvent及下面的子事件
  *              步骤：
  *                  1）.写一个监听器爱监听某个事件（ApplicationEvent及下面的子事件）
+ *
+ *                      【@EventListener】
+ *                      原理：使用EventListenerMethodProcessor处理器来解析方法上的注解
+ *                          SmartInitializingSingleton原理：
+ *                          a.容器创建对象并refresh();
+ *                          b.finishBeanFactoryInitialization(beanFactory);初始化剩下的单实例bean
+ *                              (1)先创建所有的单实例bean
+ *                              (2)获取所有创建好的单实例bean，判断是否是 SmartInitializingSingleton 类型的
+ *                                 如果是就调用 afterSingletonsInstantiated();
+ *
+ *
+ *
  *                  2）.把监听器放入到容器中
  *                  3）.只要容器中有相关事件的发布，我们就能监听到这个事件
  *                      ContextRefreshedEvent：容器刷新完成（所有bean都完全创建）会发布这个事件
  *                      ContextClosedEvent：关闭容器会发布这个事件
  *                  4）.发布一个自定义事件
+ *               原理：
+ *                  1）.ContextRefreshedEvent事件：
+ *                      a.容器创建对象 refresh();
+ *                      b.finishRefresh();容器刷新完成后会发布ContextRefreshedEvent事件
+ *                      c.publishEvent(new ContextRefreshedEvent(this));
+ *                  2）.自己发布事件
+ *                  3）.容器关闭会发布ContextClosedEvent事件
+ *                        【事件发布流程】：
+ *                            （1）获取事件的多播器（派发器）：getApplicationEventMulticaster()
+ *                            （2）multicastEvent派发事件：
+ *                            （3）获取到所有的ApplicationListener：
+ *                                 for (final ApplicationListener<?> listener : getApplicationListeners(event, type))
+ *                                  a.如果有Executor，可以使用Executor进行异步派发
+ *                                     Executor executor = getTaskExecutor();
+ *                                  b.否则同步方式直接执行listener方法：
+ *                                     invokeListener(listener, event);
+ *                                     拿到listener回调onApplicationEvent()方法
+ *
+ *          【事件多播器（派发前）】：
+ *              1）容器创建对象：refresh();
+ *              2）initApplicationEventMulticaster();初始化 ApplicationEventMulticaster
+ *                  a.先去容器找有没有id="applicationEventMulticaster"的组件
+ *                  b.如果没有 this.applicationEventMulticaster = new SimpleApplicationEventMulticaster(beanFactory);
+ *                    并且加入到容器中，我们就可以在其他组件派发事件时自动注入这个 applicationEventMulticaster
+ *
+ *          【容器中有哪些监听器】
+ *              1）容器创建对象：refresh();
+ *              2）registerListeners();
+ *                 从容器中拿到所有的监听器：
+ *                      String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
+ *                 把他们注册到 ApplicationEventMulticaster 中：
+ * 		                for (String listenerBeanName : listenerBeanNames) {
+ * 			                getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
+ *                      }
+ *
+ *
  *
  *
  *

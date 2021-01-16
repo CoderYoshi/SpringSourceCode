@@ -10,8 +10,8 @@
         <property name="name" value="张三"></property>
         <property name="age" value="18"></property>
     </bean>
-    <!--开启基于注解版的切面功能-->
-    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+<!--    &lt;!&ndash;开启基于注解版的切面功能&ndash;&gt;-->
+<!--    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>-->
 
     <!--开启基于注解版的事务功能-->
     <tx:annotation-driven/>

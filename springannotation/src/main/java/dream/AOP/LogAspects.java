@@ -17,7 +17,7 @@ public class LogAspects {
     //2.其他切面类引用：@After("dream.AOP.LogAspects.pointCut()")
     @Pointcut("execution(public int dream.AOP.MathCalculator.*(..))")
     public void pointCut(){
-
+        System.out.println("1111111111111111111111111111111111");
     }
     //JoinPoint一定要出现在参数表的第一位
     //@Before:在目标方法之前切入；切入点表达式（指定在哪个方法切入）
